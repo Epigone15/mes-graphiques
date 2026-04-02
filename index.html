@@ -5,160 +5,221 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Graphiques Pro - Custom & Export</title>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #f8f9fa;
+            padding: 30px;
+            background: #eef1f5;
             color: #333;
         }
+
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 1300px;
+            margin: auto;
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.08);
         }
+
         h1 {
             text-align: center;
+            margin-bottom: 25px;
             color: #2c3e50;
         }
-        .chart-container {
-            margin: 30px 0;
-            padding: 15px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            background: #fff;
-        }
+
         .controls {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
         }
-        select, button {
-            padding: 8px 12px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
+
+        select, input, button {
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
             background: #fff;
-            cursor: pointer;
+            font-size: 15px;
         }
+
         button {
-            background: #4CAF50;
+            background: #3498db;
             color: white;
             border: none;
+            cursor: pointer;
         }
+
         button:hover {
-            background: #45a049;
+            background: #2980b9;
+        }
+
+        .chart-container {
+            padding: 20px;
+            border-radius: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .data-editor {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-family: monospace;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Graphiques Pro - Custom & Export</h1>
+<div class="container">
 
-        <!-- Contrôles -->
-        <div class="controls">
-            <select id="chartType">
-                <option value="pie">Camembert</option>
-                <option value="bar">Histogramme</option>
-                <option value="line">Courbe</option>
-                <option value="area">Aire</option>
-                <option value="radialBar">Radial</option>
-            </select>
-            <select id="colorTheme">
-                <option value="default">Thème par défaut</option>
-                <option value="monochrome">Monochrome</option>
-                <option value="pastel">Pastel</option>
-                <option value="dark">Sombre</option>
-            </select>
-            <button id="exportPNG">Exporter en PNG</button>
-            <button id="exportSVG">Exporter en SVG</button>
-            <button id="exportCSV">Exporter en CSV</button>
-        </div>
+    <h1>Graphiques Pro – Customisation & Export</h1>
 
-        <!-- Graphique -->
-        <div class="chart-container">
-            <div id="chart"></div>
-        </div>
+    <!-- CONTROLS -->
+    <div class="controls">
+        <select id="chartType">
+            <option value="pie">Camembert</option>
+            <option value="bar">Histogramme</option>
+            <option value="line">Courbe</option>
+            <option value="area">Aire</option>
+            <option value="radialBar">Radial</option>
+            <option value="donut">Donut</option>
+        </select>
+
+        <select id="colorTheme">
+            <option value="default">Thème par défaut</option>
+            <option value="monochrome">Monochrome</option>
+            <option value="pastel">Pastel</option>
+            <option value="dark">Sombre</option>
+        </select>
+
+        <button id="exportPNG">PNG</button>
+        <button id="exportSVG">SVG</button>
+        <button id="exportCSV">CSV</button>
     </div>
 
-    <script>
-        // Données de base
-        let chartData = {
-            series: [44, 55, 13, 33],
-            labels: ['Apple', 'Mango', 'Orange', 'Banane'],
-        };
+    <!-- CHART -->
+    <div class="chart-container">
+        <div id="chart"></div>
+    </div>
 
-        // Thèmes de couleurs
-        const colorThemes = {
-            default: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
-            monochrome: ['#777', '#555', '#333', '#111'],
-            pastel: ['#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB'],
-            dark: ['#2E93fA', '#66DA26', '#546E7A', '#FF6B6B'],
-        };
+    <!-- DATA EDITOR -->
+    <div class="data-editor">
+        <h3>Modifier les données</h3>
+        <p>Format : {"labels":["A","B"],"series":[10,20]}</p>
+        <textarea id="dataInput">{ "labels": ["Apple", "Mango", "Orange", "Banane"], "series": [44, 55, 13, 33] }</textarea>
+        <button id="updateData">Mettre à jour</button>
+    </div>
 
-        // Initialisation du graphique
-        let chart = new ApexCharts(document.querySelector("#chart"), {
-            series: chartData.series,
-            chart: {
-                type: 'pie',
-                height: 400,
-                animations: { enabled: true },
-                toolbar: { show: true },
-            },
-            labels: chartData.labels,
-            colors: colorThemes.default,
-            responsive: [{
-                breakpoint: 480,
-                options: {
-                    chart: { width: '100%' },
-                    legend: { position: 'bottom' }
-                }
-            }]
-        });
-        chart.render();
+</div>
 
-        // Changement de type de graphique
-        document.getElementById('chartType').addEventListener('change', function() {
+<script>
+    // THEMES
+    const colorThemes = {
+        default: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
+        monochrome: ['#444', '#666', '#888', '#aaa'],
+        pastel: ['#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB'],
+        dark: ['#2E93fA', '#66DA26', '#546E7A', '#FF6B6B'],
+    };
+
+    // DEFAULT DATA
+    let chartData = {
+        labels: ["Apple", "Mango", "Orange", "Banane"],
+        series: [44, 55, 13, 33]
+    };
+
+    // CHART INIT
+    let chartOptions = {
+        chart: {
+            type: 'pie',
+            height: 420,
+            toolbar: { show: true },
+            animations: { enabled: true }
+        },
+        labels: chartData.labels,
+        series: chartData.series,
+        colors: colorThemes.default,
+        legend: { position: 'bottom' }
+    };
+
+    let chart = new ApexCharts(document.querySelector("#chart"), chartOptions);
+    chart.render();
+
+    // TYPE CHANGE
+    document.getElementById("chartType").addEventListener("change", e => {
+        chart.updateOptions({ chart: { type: e.target.value } });
+    });
+
+    // THEME CHANGE
+    document.getElementById("colorTheme").addEventListener("change", e => {
+        chart.updateOptions({ colors: colorThemes[e.target.value] });
+    });
+
+    // UPDATE DATA
+    document.getElementById("updateData").addEventListener("click", () => {
+        try {
+            const newData = JSON.parse(document.getElementById("dataInput").value);
+            chartData = newData;
+
             chart.updateOptions({
-                chart: { type: this.value }
+                labels: newData.labels,
+                series: newData.series
             });
-        });
 
-        // Changement de thème de couleurs
-        document.getElementById('colorTheme').addEventListener('change', function() {
-            chart.updateOptions({
-                colors: colorThemes[this.value]
-            });
-        });
+        } catch (err) {
+            alert("Format JSON invalide !");
+        }
+    });
 
-        // Export PNG
-        document.getElementById('exportPNG').addEventListener('click', function() {
-            chart.exportToImage({ format: 'png' });
-        });
-
-        // Export SVG
-        document.getElementById('exportSVG').addEventListener('click', function() {
-            chart.exportToImage({ format: 'svg' });
-        });
-
-        // Export CSV
-        document.getElementById('exportCSV').addEventListener('click', function() {
-            let csv = 'Data,\n';
-            chartData.labels.forEach((label, i) => {
-                csv += `${label},${chartData.series[i]}\n`;
-            });
-            let blob = new Blob([csv], { type: 'text/csv' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = 'graphique-data.csv';
+    // EXPORT PNG
+    document.getElementById("exportPNG").addEventListener("click", () => {
+        chart.dataURI().then(uri => {
+            let a = document.createElement("a");
+            a.href = uri.imgURI;
+            a.download = "graphique.png";
             a.click();
         });
-    </script>
+    });
+
+    // EXPORT SVG
+    document.getElementById("exportSVG").addEventListener("click", () => {
+        chart.dataURI().then(uri => {
+            let a = document.createElement("a");
+            a.href = uri.svgURI;
+            a.download = "graphique.svg";
+            a.click();
+        });
+    });
+
+    // EXPORT CSV
+    document.getElementById("exportCSV").addEventListener("click", () => {
+        let csv = "Label,Valeur\n";
+        chartData.labels.forEach((label, i) => {
+            csv += `${label},${chartData.series[i]}\n`;
+        });
+
+        let blob = new Blob([csv], { type: "text/csv" });
+        let url = URL.createObjectURL(blob);
+
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "graphique.csv";
+        a.click();
+    });
+</script>
+
 </body>
 </html>
