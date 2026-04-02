@@ -3,103 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes Graphiques Trop Stylés</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Graphiques Pro - Custom & Export</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: #f8f9fa;
+            color: #333;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .chart-container {
-            width: 100%;
-            margin: 20px 0;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #333;
             text-align: center;
+            color: #2c3e50;
+        }
+        .chart-container {
+            margin: 30px 0;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        select, button {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: #fff;
+            cursor: pointer;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+        }
+        button:hover {
+            background: #45a049;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Mes Graphiques Trop Stylés</h1>
+        <h1>Graphiques Pro - Custom & Export</h1>
 
-        <!-- Camembert -->
-        <div class="chart-container">
-            <canvas id="pieChart"></canvas>
+        <!-- Contrôles -->
+        <div class="controls">
+            <select id="chartType">
+                <option value="pie">Camembert</option>
+                <option value="bar">Histogramme</option>
+                <option value="line">Courbe</option>
+                <option value="area">Aire</option>
+                <option value="radialBar">Radial</option>
+            </select>
+            <select id="colorTheme">
+                <option value="default">Thème par défaut</option>
+                <option value="monochrome">Monochrome</option>
+                <option value="pastel">Pastel</option>
+                <option value="dark">Sombre</option>
+            </select>
+            <button id="exportPNG">Exporter en PNG</button>
+            <button id="exportSVG">Exporter en SVG</button>
+            <button id="exportCSV">Exporter en CSV</button>
         </div>
 
-        <!-- Histogramme -->
+        <!-- Graphique -->
         <div class="chart-container">
-            <canvas id="barChart"></canvas>
-        </div>
-
-        <!-- Courbe -->
-        <div class="chart-container">
-            <canvas id="lineChart"></canvas>
+            <div id="chart"></div>
         </div>
     </div>
 
     <script>
-        // Données pour le camembert
-        const pieData = {
-            labels: ['Rouge', 'Bleu', 'Jaune', 'Vert'],
-            datasets: [{
-                data: [30, 20, 25, 25],
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-            }]
+        // Données de base
+        let chartData = {
+            series: [44, 55, 13, 33],
+            labels: ['Apple', 'Mango', 'Orange', 'Banane'],
         };
 
-        // Données pour l'histogramme
-        const barData = {
-            labels: ['Janvier', 'Février', 'Mars', 'Avril', 'Mai'],
-            datasets: [{
-                label: 'Ventes 2026',
-                data: [65, 59, 80, 81, 56],
-                backgroundColor: '#36A2EB',
-            }]
+        // Thèmes de couleurs
+        const colorThemes = {
+            default: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
+            monochrome: ['#777', '#555', '#333', '#111'],
+            pastel: ['#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB'],
+            dark: ['#2E93fA', '#66DA26', '#546E7A', '#FF6B6B'],
         };
 
-        // Données pour la courbe
-        const lineData = {
-            labels: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
-            datasets: [{
-                label: 'Température (°C)',
-                data: [20, 22, 19, 24, 21],
-                borderColor: '#FF6384',
-                fill: false,
-            }]
-        };
-
-        // Initialisation des graphiques
-        window.onload = function() {
-            new Chart(document.getElementById('pieChart'), {
+        // Initialisation du graphique
+        let chart = new ApexCharts(document.querySelector("#chart"), {
+            series: chartData.series,
+            chart: {
                 type: 'pie',
-                data: pieData,
-            });
+                height: 400,
+                animations: { enabled: true },
+                toolbar: { show: true },
+            },
+            labels: chartData.labels,
+            colors: colorThemes.default,
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: { width: '100%' },
+                    legend: { position: 'bottom' }
+                }
+            }]
+        });
+        chart.render();
 
-            new Chart(document.getElementById('barChart'), {
-                type: 'bar',
-                data: barData,
-                options: { responsive: true }
+        // Changement de type de graphique
+        document.getElementById('chartType').addEventListener('change', function() {
+            chart.updateOptions({
+                chart: { type: this.value }
             });
+        });
 
-            new Chart(document.getElementById('lineChart'), {
-                type: 'line',
-                data: lineData,
-                options: { responsive: true }
+        // Changement de thème de couleurs
+        document.getElementById('colorTheme').addEventListener('change', function() {
+            chart.updateOptions({
+                colors: colorThemes[this.value]
             });
-        };
+        });
+
+        // Export PNG
+        document.getElementById('exportPNG').addEventListener('click', function() {
+            chart.exportToImage({ format: 'png' });
+        });
+
+        // Export SVG
+        document.getElementById('exportSVG').addEventListener('click', function() {
+            chart.exportToImage({ format: 'svg' });
+        });
+
+        // Export CSV
+        document.getElementById('exportCSV').addEventListener('click', function() {
+            let csv = 'Data,\n';
+            chartData.labels.forEach((label, i) => {
+                csv += `${label},${chartData.series[i]}\n`;
+            });
+            let blob = new Blob([csv], { type: 'text/csv' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'graphique-data.csv';
+            a.click();
+        });
     </script>
 </body>
 </html>
