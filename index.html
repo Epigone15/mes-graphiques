@@ -237,7 +237,7 @@
 
         // Changement de type de graphique
         document.getElementById('chartType').addEventListener('change', function(e) {
-            chart.updateOptions({ chart: { type: e.target.value } });
+            document.getElementById('updateChart').click(); // Force la mise à jour
         });
 
         // Changement de thème
@@ -245,7 +245,6 @@
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active-theme'));
                 this.classList.add('active-theme');
-                chart.updateOptions({ colors: themes[this.dataset.theme] });
             });
         });
 
@@ -284,10 +283,40 @@
             });
 
             chartData = { labels: newLabels, series: newSeries };
-            chart.updateOptions({
+            
+            // Gestion des types de graphiques spécifiques
+            let chartType = document.getElementById('chartType').value;
+            let options = {
+                series: [],
+                chart: { type: chartType, height: 450, animations: { enabled: true }, toolbar: { show: true } },
+                colors: themes[document.querySelector('.theme-btn.active-theme').dataset.theme],
                 labels: newLabels,
-                series: newSeries
-            });
+                legend: { position: 'bottom' },
+                responsive: [{ breakpoint: 1000, options: { chart: { width: '100%' }, legend: { position: 'bottom' } } }]
+            };
+
+            // Adaptation des données selon le type de graphique
+            if (['pie', 'donut', 'radialBar'].includes(chartType)) {
+                options.series = newSeries;
+            } else if (chartType === 'heatmap') {
+                // Pour heatmap, on génère une matrice simple
+                options.series = [{ name: 'Data', data: newSeries.map((val, i) => ({ x: newLabels[i], y: val })) }];
+                options.plotOptions = { heatmap: { shadeIntensity: 0.5 } };
+                options.xaxis = { type: 'category', categories: newLabels };
+            } else if (chartType === 'radar') {
+                options.series = [{ name: 'Series 1', data: newSeries }];
+                options.xaxis = { categories: newLabels };
+                options.yaxis = { min: 0, max: Math.max(...newSeries) * 1.2 };
+            } else if (chartType === 'scatter') {
+                options.series = [{ name: 'Series 1', data: newSeries.map((val, i) => ({ x: i, y: val })) }];
+                options.xaxis = { type: 'numeric', min: 0, max: newSeries.length - 1 };
+            } else {
+                // Bar, line, area
+                options.series = [{ name: 'Data', data: newSeries }];
+                options.xaxis = { categories: newLabels };
+            }
+
+            chart.updateOptions(options, true);
         });
 
         // Import CSV
@@ -312,6 +341,7 @@
                         });
                     });
                     e.target.value = '';
+                    document.getElementById('updateChart').click(); // Met à jour le graphique
                 }
             });
         });
