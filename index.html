@@ -1,208 +1,210 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Graphiques Ultra-Pro v2</title>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
-
-<style>
-:root {
-    --primary: #4f46e5;
-    --secondary: #22c55e;
-    --bg: #0f172a;
-    --card: #111827;
-    --text: #e5e7eb;
-}
-
-body {
-    margin: 0;
-    font-family: system-ui;
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: var(--text);
-}
-
-.container {
-    max-width: 1400px;
-    margin: auto;
-    padding: 20px;
-}
-
-h1 {
-    text-align: center;
-    font-size: 2.2em;
-    margin-bottom: 20px;
-}
-
-.controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-button, select {
-    background: var(--card);
-    border: 1px solid #374151;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: var(--primary);
-}
-
-.chart-box {
-    background: var(--card);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-}
-
-.data-editor {
-    margin-top: 20px;
-    background: var(--card);
-    padding: 15px;
-    border-radius: 15px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-td, th {
-    padding: 10px;
-    border-bottom: 1px solid #374151;
-}
-
-th {
-    color: #9ca3af;
-}
-
-td[contenteditable] {
-    outline: none;
-}
-
-.remove {
-    color: red;
-    cursor: pointer;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphiques Ultra-Pro v2</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #22c55e;
+            --bg: #0f172a;
+            --card: #111827;
+            --text: #e5e7eb;
+        }
+        body {
+            margin: 0;
+            font-family: system-ui;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: var(--text);
+        }
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        button, select {
+            background: var(--card);
+            border: 1px solid #374151;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: var(--primary);
+        }
+        .chart-box {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        .data-editor {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td, th {
+            padding: 10px;
+            border-bottom: 1px solid #374151;
+        }
+        th {
+            color: #9ca3af;
+        }
+        td[contenteditable] {
+            outline: none;
+        }
+        .remove {
+            color: red;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
 <div class="container">
-<h1>📊 Graphiques Ultra-Pro v2</h1>
+    <h1>📊 Graphiques Ultra-Pro v2</h1>
 
-<div class="controls">
-<select id="type">
-<option value="bar">Bar</option>
-<option value="line">Line</option>
-<option value="area">Area</option>
-<option value="pie">Pie</option>
-<option value="donut">Donut</option>
-</select>
+    <div class="controls">
+        <select id="type">
+            <option value="bar">Bar</option>
+            <option value="line">Line</option>
+            <option value="area">Area</option>
+            <option value="pie">Pie</option>
+            <option value="donut">Donut</option>
+        </select>
 
-<button onclick="updateChart()">Update</button>
-<button onclick="addRow()">+ Row</button>
-<button onclick="exportPNG()">PNG</button>
-<button onclick="exportCSV()">CSV</button>
-</div>
+        <button onclick="updateChart()">Mettre à jour</button>
+        <button onclick="addRow()">+ Ligne</button>
+        <button onclick="exportPNG()">PNG</button>
+        <button onclick="exportCSV()">CSV</button>
+    </div>
 
-<div class="chart-box">
-<div id="chart"></div>
-</div>
+    <div class="chart-box">
+        <div id="chart"></div>
+    </div>
 
-<div class="data-editor">
-<table id="table">
-<thead>
-<tr><th>Label</th><th>Value</th><th></th></tr>
-</thead>
-<tbody>
-<tr><td contenteditable>Test 1</td><td contenteditable>10</td><td class="remove" onclick="removeRow(this)">✖</td></tr>
-<tr><td contenteditable>Test 2</td><td contenteditable>30</td><td class="remove" onclick="removeRow(this)">✖</td></tr>
-</tbody>
-</table>
-</div>
-
+    <div class="data-editor">
+        <table id="table">
+            <thead>
+                <tr><th>Label</th><th>Valeur</th><th></th></tr>
+            </thead>
+            <tbody>
+                <tr><td contenteditable>Test 1</td><td contenteditable>10</td><td class="remove" onclick="removeRow(this)">✖</td></tr>
+                <tr><td contenteditable>Test 2</td><td contenteditable>30</td><td class="remove" onclick="removeRow(this)">✖</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-let chart;
+    let chart;
 
-function getData() {
-    let labels = [];
-    let values = [];
+    function getData() {
+        let labels = [];
+        let values = [];
 
-    document.querySelectorAll("#table tbody tr").forEach(r => {
-        labels.push(r.children[0].innerText);
-        values.push(parseFloat(r.children[1].innerText) || 0);
-    });
+        document.querySelectorAll("#table tbody tr").forEach(r => {
+            labels.push(r.children[0].innerText);
+            values.push(parseFloat(r.children[1].innerText) || 0);
+        });
 
-    return { labels, values };
-}
+        return { labels, values };
+    }
 
-function updateChart() {
-    let { labels, values } = getData();
-    let type = document.getElementById("type").value;
+    function renderChart() {
+        let { labels, values } = getData();
+        let type = document.getElementById("type").value;
 
-    let options = {
-        chart: { type: type, height: 400, animations: { enabled: true } },
-        series: (type === "pie" || type === "donut") ? values : [{ data: values }],
-        labels: labels,
-        theme: { mode: 'dark' }
-    };
+        let options = {
+            chart: {
+                type: type,
+                height: 400,
+                animations: { enabled: true },
+                dropShadow: { enabled: true }
+            },
+            series: (type === "pie" || type === "donut") ? values : [{ name: "Data", data: values }],
+            labels: labels,
+            theme: { mode: 'dark', palette: 'palette1' },
+            plotOptions: {
+                bar: { distributed: true },
+                pie: { donut: { labels: { show: type === "donut" } } }
+            },
+            dataLabels: { enabled: true },
+            legend: { position: 'bottom' },
+            xaxis: type !== "pie" && type !== "donut" ? { categories: labels } : {}
+        };
 
-    if(chart) chart.destroy();
-    chart = new ApexCharts(document.querySelector("#chart"), options);
-    chart.render();
-}
+        if (chart) {
+            chart.destroy();
+        }
+        chart = new ApexCharts(document.querySelector("#chart"), options);
+        chart.render();
+    }
 
-function addRow() {
-    let tr = document.createElement("tr");
-    tr.innerHTML = `
-    <td contenteditable>New</td>
-    <td contenteditable>0</td>
-    <td class="remove" onclick="removeRow(this)">✖</td>
-    `;
-    document.querySelector("#table tbody").appendChild(tr);
-}
+    function updateChart() {
+        renderChart();
+    }
 
-function removeRow(el) {
-    el.parentElement.remove();
-}
+    function addRow() {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td contenteditable>Nouveau</td>
+            <td contenteditable>0</td>
+            <td class="remove" onclick="removeRow(this)">✖</td>
+        `;
+        document.querySelector("#table tbody").appendChild(tr);
+    }
 
-function exportPNG() {
-    chart.dataURI().then(({ imgURI }) => {
+    function removeRow(el) {
+        el.parentElement.remove();
+        renderChart(); // Met à jour le graphique après suppression
+    }
+
+    function exportPNG() {
+        chart.dataURI().then(({ imgURI }) => {
+            let a = document.createElement("a");
+            a.href = imgURI;
+            a.download = "graphique.png";
+            a.click();
+        });
+    }
+
+    function exportCSV() {
+        let { labels, values } = getData();
+        let csv = "Label,Valeur\n";
+        labels.forEach((l, i) => {
+            csv += `${l},${values[i]}\n`;
+        });
+
+        let blob = new Blob([csv], { type: "text/csv" });
         let a = document.createElement("a");
-        a.href = imgURI;
-        a.download = "chart.png";
+        a.href = URL.createObjectURL(blob);
+        a.download = "données.csv";
         a.click();
-    });
-}
+    }
 
-function exportCSV() {
-    let { labels, values } = getData();
-    let csv = "Label,Value\n";
-
-    labels.forEach((l,i)={
-        csv += l+","+values[i]+"\n";
-    });
-
-    let blob = new Blob([csv]);
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "data.csv";
-    a.click();
-}
-
-updateChart();
+    // Initialisation automatique au chargement
+    window.onload = renderChart;
 </script>
 
 </body>
