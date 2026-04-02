@@ -3,209 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graphiques Ultra-Pro v2</title>
+    <title>Graphiques Ultra-Pro v3</title>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
         :root {
-            --primary: #4f46e5;
-            --secondary: #22c55e;
-            --bg: #0f172a;
-            --card: #111827;
-            --text: #e5e7eb;
+            --bg: #111827;
+            --card: #1f2937;
+            --text: #f9fafb;
+            --primary: #6366f1;
+            --secondary: #10b981;
         }
         body {
             margin: 0;
-            font-family: system-ui;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
             color: var(--text);
+            padding: 20px;
         }
         .container {
-            max-width: 1400px;
-            margin: auto;
-            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
         h1 {
             text-align: center;
-            font-size: 2.2em;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            font-size: 2rem;
         }
         .controls {
             display: flex;
-            flex-wrap: wrap;
             gap: 10px;
+            flex-wrap: wrap;
             justify-content: center;
             margin-bottom: 20px;
         }
         button, select {
-            background: var(--card);
-            border: 1px solid #374151;
-            color: white;
-            padding: 10px;
+            padding: 10px 15px;
             border-radius: 8px;
+            border: 1px solid #374151;
+            background: var(--card);
+            color: white;
             cursor: pointer;
+            transition: all 0.2s;
         }
         button:hover {
             background: var(--primary);
         }
-        .chart-box {
+        .chart-container {
             background: var(--card);
-            border-radius: 15px;
+            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
         .data-editor {
             background: var(--card);
-            padding: 15px;
-            border-radius: 15px;
+            border-radius: 12px;
+            padding: 20px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        td, th {
-            padding: 10px;
+        th, td {
+            padding: 12px;
+            text-align: left;
             border-bottom: 1px solid #374151;
         }
         th {
             color: #9ca3af;
         }
-        td[contenteditable] {
-            outline: none;
-        }
-        .remove {
-            color: red;
+        .remove-btn {
+            color: #ef4444;
             cursor: pointer;
+            font-weight: bold;
+        }
+        #chart {
+            min-height: 400px;
         }
     </style>
 </head>
 
 <body>
-<div class="container">
-    <h1>📊 Graphiques Ultra-Pro v2</h1>
+    <div class="container">
+        <h1>📊 Graphiques Ultra-Pro v3</h1>
 
-    <div class="controls">
-        <select id="type">
-            <option value="bar">Bar</option>
-            <option value="line">Line</option>
-            <option value="area">Area</option>
-            <option value="pie">Pie</option>
-            <option value="donut">Donut</option>
-        </select>
+        <div class="controls">
+            <select id="chartType">
+                <option value="bar">Histogramme</option>
+                <option value="line">Courbe</option>
+                <option value="area">Aire</option>
+                <option value="pie">Camembert</option>
+                <option value="donut">Donut</option>
+            </select>
+            <button onclick="updateChart()">Mettre à jour</button>
+            <button onclick="addRow()">+ Ligne</button>
+            <button onclick="exportPNG()">Exporter PNG</button>
+            <button onclick="exportCSV()">Exporter CSV</button>
+        </div>
 
-        <button onclick="updateChart()">Mettre à jour</button>
-        <button onclick="addRow()">+ Ligne</button>
-        <button onclick="exportPNG()">PNG</button>
-        <button onclick="exportCSV()">CSV</button>
+        <div class="chart-container">
+            <div id="chart"></div>
+        </div>
+
+        <div class="data-editor">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Label</th>
+                        <th>Valeur</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td contenteditable="true">Janvier</td>
+                        <td contenteditable="true">30</td>
+                        <td><span class="remove-btn" onclick="removeRow(this)">×</span></td>
+                    </tr>
+                    <tr>
+                        <td contenteditable="true">Février</td>
+                        <td contenteditable="true">50</td>
+                        <td><span class="remove-btn" onclick="removeRow(this)">×</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="chart-box">
-        <div id="chart"></div>
-    </div>
+    <script>
+        let chart;
 
-    <div class="data-editor">
-        <table id="table">
-            <thead>
-                <tr><th>Label</th><th>Valeur</th><th></th></tr>
-            </thead>
-            <tbody>
-                <tr><td contenteditable>Test 1</td><td contenteditable>10</td><td class="remove" onclick="removeRow(this)">✖</td></tr>
-                <tr><td contenteditable>Test 2</td><td contenteditable>30</td><td class="remove" onclick="removeRow(this)">✖</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+        // Récupère les données du tableau
+        function getData() {
+            const rows = document.querySelectorAll("#dataTable tbody tr");
+            const labels = [];
+            const values = [];
 
-<script>
-    let chart;
+            rows.forEach(row => {
+                labels.push(row.cells[0].textContent);
+                values.push(parseFloat(row.cells[1].textContent) || 0);
+            });
 
-    function getData() {
-        let labels = [];
-        let values = [];
-
-        document.querySelectorAll("#table tbody tr").forEach(r => {
-            labels.push(r.children[0].innerText);
-            values.push(parseFloat(r.children[1].innerText) || 0);
-        });
-
-        return { labels, values };
-    }
-
-    function renderChart() {
-        let { labels, values } = getData();
-        let type = document.getElementById("type").value;
-
-        let options = {
-            chart: {
-                type: type,
-                height: 400,
-                animations: { enabled: true },
-                dropShadow: { enabled: true }
-            },
-            series: (type === "pie" || type === "donut") ? values : [{ name: "Data", data: values }],
-            labels: labels,
-            theme: { mode: 'dark', palette: 'palette1' },
-            plotOptions: {
-                bar: { distributed: true },
-                pie: { donut: { labels: { show: type === "donut" } } }
-            },
-            dataLabels: { enabled: true },
-            legend: { position: 'bottom' },
-            xaxis: type !== "pie" && type !== "donut" ? { categories: labels } : {}
-        };
-
-        if (chart) {
-            chart.destroy();
+            return { labels, values };
         }
-        chart = new ApexCharts(document.querySelector("#chart"), options);
-        chart.render();
-    }
 
-    function updateChart() {
-        renderChart();
-    }
+        // Met à jour le graphique
+        function updateChart() {
+            const { labels, values } = getData();
+            const chartType = document.getElementById("chartType").value;
 
-    function addRow() {
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td contenteditable>Nouveau</td>
-            <td contenteditable>0</td>
-            <td class="remove" onclick="removeRow(this)">✖</td>
-        `;
-        document.querySelector("#table tbody").appendChild(tr);
-    }
+            const options = {
+                chart: {
+                    type: chartType,
+                    height: 400,
+                    animations: { enabled: true },
+                    dropShadow: { enabled: true }
+                },
+                series: (chartType === "pie" || chartType === "donut") ? values : [{ name: "Données", data: values }],
+                labels: labels,
+                theme: { mode: 'dark', palette: 'palette1' },
+                plotOptions: {
+                    bar: { distributed: true },
+                    pie: { donut: { labels: { show: chartType === "donut" } } }
+                },
+                dataLabels: { enabled: true },
+                legend: { position: 'bottom' },
+                xaxis: (chartType !== "pie" && chartType !== "donut") ? { categories: labels } : {}
+            };
 
-    function removeRow(el) {
-        el.parentElement.remove();
-        renderChart(); // Met à jour le graphique après suppression
-    }
+            // Détruit l'ancien graphique s'il existe
+            if (chart) {
+                chart.destroy();
+            }
 
-    function exportPNG() {
-        chart.dataURI().then(({ imgURI }) => {
-            let a = document.createElement("a");
-            a.href = imgURI;
-            a.download = "graphique.png";
-            a.click();
-        });
-    }
+            // Crée le nouveau graphique
+            chart = new ApexCharts(document.querySelector("#chart"), options);
+            chart.render();
+        }
 
-    function exportCSV() {
-        let { labels, values } = getData();
-        let csv = "Label,Valeur\n";
-        labels.forEach((l, i) => {
-            csv += `${l},${values[i]}\n`;
-        });
+        // Ajoute une ligne
+        function addRow() {
+            const tbody = document.querySelector("#dataTable tbody");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td contenteditable="true">Nouveau</td>
+                <td contenteditable="true">0</td>
+                <td><span class="remove-btn" onclick="removeRow(this)">×</span></td>
+            `;
+            tbody.appendChild(row);
+        }
 
-        let blob = new Blob([csv], { type: "text/csv" });
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "données.csv";
-        a.click();
-    }
+        // Supprime une ligne
+        function removeRow(el) {
+            el.closest("tr").remove();
+            updateChart(); // Met à jour le graphique
+        }
 
-    // Initialisation automatique au chargement
-    window.onload = renderChart;
-</script>
+        // Exporte en PNG
+        function exportPNG() {
+            chart.dataURI().then(({ imgURI }) => {
+                const link = document.createElement("a");
+                link.href = imgURI;
+                link.download = "graphique.png";
+                link.click();
+            });
+        }
 
+        // Exporte en CSV
+        function exportCSV() {
+            const { labels, values } = getData();
+            let csv = "Label,Valeur\n";
+            labels.forEach((label, i) => {
+                csv += `${label},${values[i]}\n`;
+            });
+
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "données.csv";
+            link.click();
+        }
+
+        // Initialise le graphique au chargement
+        window.addEventListener("DOMContentLoaded", updateChart);
+    </script>
 </body>
 </html>
