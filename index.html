@@ -3,33 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graphiques Pro - Custom & Export</title>
+    <title>Graphiques Ultra-Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
     <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+            --danger: #e74c3c;
+        }
         body {
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding: 30px;
-            background: #eef1f5;
-            color: #333;
+            padding: 0;
+            background: #f5f7fa;
+            color: var(--dark);
         }
-
         .container {
-            max-width: 1300px;
-            margin: auto;
-            background: white;
+            max-width: 1400px;
+            margin: 20px auto;
             padding: 25px;
+            background: white;
             border-radius: 12px;
-            box-shadow: 0 0 25px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
-
         h1 {
             text-align: center;
-            margin-bottom: 25px;
-            color: #2c3e50;
+            color: var(--dark);
+            margin-bottom: 30px;
         }
-
         .controls {
             display: flex;
             flex-wrap: wrap;
@@ -37,189 +41,316 @@
             margin-bottom: 25px;
             justify-content: center;
         }
-
-        select, input, button {
-            padding: 10px 14px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            background: #fff;
-            font-size: 15px;
-        }
-
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #2980b9;
-        }
-
         .chart-container {
             padding: 20px;
             border-radius: 10px;
-            background: #fff;
-            border: 1px solid #ddd;
+            background: white;
+            border: 1px solid #eee;
+            margin-bottom: 30px;
         }
-
         .data-editor {
-            margin-top: 30px;
-            padding: 20px;
-            background: #fafafa;
+            background: var(--light);
             border-radius: 10px;
-            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
         }
-
-        textarea {
+        table {
             width: 100%;
-            height: 120px;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        th, td {
             padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: var(--primary);
+            color: white;
+        }
+        input, select, button {
+            padding: 10px 15px;
             border-radius: 6px;
-            border: 1px solid #ccc;
-            font-family: monospace;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .file-input {
+            display: none;
+        }
+        .file-label {
+            display: inline-block;
+            padding: 10px 15px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .theme-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .active-theme {
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--primary);
         }
     </style>
 </head>
-
 <body>
-<div class="container">
+    <div class="container">
+        <h1>Graphiques Ultra-Pro</h1>
 
-    <h1>Graphiques Pro – Customisation & Export</h1>
+        <!-- Contrôles principaux -->
+        <div class="controls">
+            <select id="chartType">
+                <option value="pie">Camembert</option>
+                <option value="bar">Histogramme</option>
+                <option value="line">Courbe</option>
+                <option value="area">Aire</option>
+                <option value="radialBar">Radial</option>
+                <option value="donut">Donut</option>
+                <option value="heatmap">Heatmap</option>
+                <option value="radar">Radar</option>
+                <option value="scatter">Scatter</option>
+            </select>
 
-    <!-- CONTROLS -->
-    <div class="controls">
-        <select id="chartType">
-            <option value="pie">Camembert</option>
-            <option value="bar">Histogramme</option>
-            <option value="line">Courbe</option>
-            <option value="area">Aire</option>
-            <option value="radialBar">Radial</option>
-            <option value="donut">Donut</option>
-        </select>
+            <div class="theme-selector" id="themeSelector">
+                <button class="theme-btn active-theme" data-theme="default" style="background: #008FFB;">Déault</button>
+                <button class="theme-btn" data-theme="modern" style="background: #6c5ce7;">Moderne</button>
+                <button class="theme-btn" data-theme="minimal" style="background: #b2bec3;">Minimal</button>
+                <button class="theme-btn" data-theme="dark" style="background: #2d3436; color: white;">Sombre</button>
+            </div>
 
-        <select id="colorTheme">
-            <option value="default">Thème par défaut</option>
-            <option value="monochrome">Monochrome</option>
-            <option value="pastel">Pastel</option>
-            <option value="dark">Sombre</option>
-        </select>
+            <div>
+                <button id="exportPNG">Exporter PNG</button>
+                <button id="exportSVG">Exporter SVG</button>
+                <button id="exportCSV">Exporter CSV</button>
+            </div>
+        </div>
 
-        <button id="exportPNG">PNG</button>
-        <button id="exportSVG">SVG</button>
-        <button id="exportCSV">CSV</button>
+        <!-- Import/Export de fichiers -->
+        <div class="controls">
+            <label class="file-label" for="importCSV">Importer CSV</label>
+            <input type="file" id="importCSV" class="file-input" accept=".csv">
+
+            <label class="file-label" for="importExcel">Importer Excel</label>
+            <input type="file" id="importExcel" class="file-input" accept=".xlsx,.xls">
+        </div>
+
+        <!-- Graphique -->
+        <div class="chart-container">
+            <div id="chart"></div>
+        </div>
+
+        <!-- Éditeur de données -->
+        <div class="data-editor">
+            <h3>Éditeur de données</h3>
+            <div>
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Label</th>
+                            <th>Valeur</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td contenteditable="true">Apple</td>
+                            <td contenteditable="true">44</td>
+                            <td><button class="remove-row">×</button></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true">Mango</td>
+                            <td contenteditable="true">55</td>
+                            <td><button class="remove-row">×</button></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true">Orange</td>
+                            <td contenteditable="true">13</td>
+                            <td><button class="remove-row">×</button></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true">Banane</td>
+                            <td contenteditable="true">33</td>
+                            <td><button class="remove-row">×</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button id="addRow">+ Ajouter une ligne</button>
+                <button id="updateChart">Mettre à jour le graphique</button>
+            </div>
+        </div>
     </div>
 
-    <!-- CHART -->
-    <div class="chart-container">
-        <div id="chart"></div>
-    </div>
+    <script>
+        // Thèmes de couleurs
+        const themes = {
+            default: ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26a69a', '#D10CE8'],
+            modern: ['#6c5ce7', '#fd79a8', '#fdcb6e', '#a3be8c', '#b48ead', '#81a1c1', '#5e81ac', '#d08770'],
+            minimal: ['#487eb0', '#444444', '#7f8c8d', '#bdc3c7', '#34495e', '#2c3e50', '#95a5a6', '#ec87bf'],
+            dark: ['#2d3436', '#636e72', '#b2bec3', '#dfe6e9', '#fdcb6e', '#e17055', '#81ecec', '#fab1a0']
+        };
 
-    <!-- DATA EDITOR -->
-    <div class="data-editor">
-        <h3>Modifier les données</h3>
-        <p>Format : {"labels":["A","B"],"series":[10,20]}</p>
-        <textarea id="dataInput">{ "labels": ["Apple", "Mango", "Orange", "Banane"], "series": [44, 55, 13, 33] }</textarea>
-        <button id="updateData">Mettre à jour</button>
-    </div>
+        // Données par défaut
+        let chartData = {
+            labels: ["Apple", "Mango", "Orange", "Banane"],
+            series: [44, 55, 13, 33]
+        };
 
-</div>
+        // Initialisation du graphique
+        let chart = new ApexCharts(document.querySelector("#chart"), {
+            series: chartData.series,
+            chart: {
+                type: 'pie',
+                height: 450,
+                animations: { enabled: true },
+                toolbar: { show: true }
+            },
+            labels: chartData.labels,
+            colors: themes.default,
+            legend: { position: 'bottom' },
+            responsive: [{
+                breakpoint: 1000,
+                options: {
+                    chart: { width: '100%' },
+                    legend: { position: 'bottom' }
+                }
+            }]
+        });
+        chart.render();
 
-<script>
-    // THEMES
-    const colorThemes = {
-        default: ['#008FFB', '#00E396', '#FEB019', '#FF4560'],
-        monochrome: ['#444', '#666', '#888', '#aaa'],
-        pastel: ['#FF9AA2', '#FFB7B2', '#FFDAC1', '#E2F0CB'],
-        dark: ['#2E93fA', '#66DA26', '#546E7A', '#FF6B6B'],
-    };
+        // Changement de type de graphique
+        document.getElementById('chartType').addEventListener('change', function(e) {
+            chart.updateOptions({ chart: { type: e.target.value } });
+        });
 
-    // DEFAULT DATA
-    let chartData = {
-        labels: ["Apple", "Mango", "Orange", "Banane"],
-        series: [44, 55, 13, 33]
-    };
+        // Changement de thème
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active-theme'));
+                this.classList.add('active-theme');
+                chart.updateOptions({ colors: themes[this.dataset.theme] });
+            });
+        });
 
-    // CHART INIT
-    let chartOptions = {
-        chart: {
-            type: 'pie',
-            height: 420,
-            toolbar: { show: true },
-            animations: { enabled: true }
-        },
-        labels: chartData.labels,
-        series: chartData.series,
-        colors: colorThemes.default,
-        legend: { position: 'bottom' }
-    };
+        // Ajouter une ligne
+        document.getElementById('addRow').addEventListener('click', function() {
+            const tbody = document.querySelector('#dataTable tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td contenteditable="true">Nouveau</td>
+                <td contenteditable="true">0</td>
+                <td><button class="remove-row">×</button></td>
+            `;
+            tbody.appendChild(row);
+            row.querySelector('.remove-row').addEventListener('click', function() {
+                this.closest('tr').remove();
+            });
+        });
 
-    let chart = new ApexCharts(document.querySelector("#chart"), chartOptions);
-    chart.render();
+        // Supprimer une ligne
+        document.querySelectorAll('.remove-row').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.closest('tr').remove();
+            });
+        });
 
-    // TYPE CHANGE
-    document.getElementById("chartType").addEventListener("change", e => {
-        chart.updateOptions({ chart: { type: e.target.value } });
-    });
+        // Mettre à jour le graphique
+        document.getElementById('updateChart').addEventListener('click', function() {
+            const rows = document.querySelectorAll('#dataTable tbody tr');
+            const newLabels = [];
+            const newSeries = [];
 
-    // THEME CHANGE
-    document.getElementById("colorTheme").addEventListener("change", e => {
-        chart.updateOptions({ colors: colorThemes[e.target.value] });
-    });
-
-    // UPDATE DATA
-    document.getElementById("updateData").addEventListener("click", () => {
-        try {
-            const newData = JSON.parse(document.getElementById("dataInput").value);
-            chartData = newData;
-
-            chart.updateOptions({
-                labels: newData.labels,
-                series: newData.series
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                newLabels.push(cells[0].textContent);
+                newSeries.push(parseFloat(cells[1].textContent) || 0);
             });
 
-        } catch (err) {
-            alert("Format JSON invalide !");
-        }
-    });
-
-    // EXPORT PNG
-    document.getElementById("exportPNG").addEventListener("click", () => {
-        chart.dataURI().then(uri => {
-            let a = document.createElement("a");
-            a.href = uri.imgURI;
-            a.download = "graphique.png";
-            a.click();
-        });
-    });
-
-    // EXPORT SVG
-    document.getElementById("exportSVG").addEventListener("click", () => {
-        chart.dataURI().then(uri => {
-            let a = document.createElement("a");
-            a.href = uri.svgURI;
-            a.download = "graphique.svg";
-            a.click();
-        });
-    });
-
-    // EXPORT CSV
-    document.getElementById("exportCSV").addEventListener("click", () => {
-        let csv = "Label,Valeur\n";
-        chartData.labels.forEach((label, i) => {
-            csv += `${label},${chartData.series[i]}\n`;
+            chartData = { labels: newLabels, series: newSeries };
+            chart.updateOptions({
+                labels: newLabels,
+                series: newSeries
+            });
         });
 
-        let blob = new Blob([csv], { type: "text/csv" });
-        let url = URL.createObjectURL(blob);
+        // Import CSV
+        document.getElementById('importCSV').addEventListener('change', function(e) {
+            Papa.parse(e.target.files[0], {
+                header: true,
+                complete: function(results) {
+                    const tbody = document.querySelector('#dataTable tbody');
+                    tbody.innerHTML = '';
+                    results.data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td contenteditable="true">${row.Label || 'Nouveau'}</td>
+                            <td contenteditable="true">${row.Valeur || 0}</td>
+                            <td><button class="remove-row">×</button></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    document.querySelectorAll('.remove-row').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            this.closest('tr').remove();
+                        });
+                    });
+                    e.target.value = '';
+                }
+            });
+        });
 
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = "graphique.csv";
-        a.click();
-    });
-</script>
+        // Export PNG
+        document.getElementById('exportPNG').addEventListener('click', function() {
+            chart.dataURI().then(({ imgURI }) => {
+                const link = document.createElement('a');
+                link.href = imgURI;
+                link.download = 'graphique.png';
+                link.click();
+            });
+        });
 
+        // Export SVG
+        document.getElementById('exportSVG').addEventListener('click', function() {
+            chart.dataURI().then(({ svgURI }) => {
+                const link = document.createElement('a');
+                link.href = svgURI;
+                link.download = 'graphique.svg';
+                link.click();
+            });
+        });
+
+        // Export CSV
+        document.getElementById('exportCSV').addEventListener('click', function() {
+            let csv = 'Label,Valeur\n';
+            document.querySelectorAll('#dataTable tbody tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                csv += `${cells[0].textContent},${cells[1].textContent}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'graphique.csv';
+            link.click();
+        });
+    </script>
 </body>
 </html>
